@@ -9,6 +9,7 @@ venv/
 runs/
 uploads/
 static/results/
+static/result_*.jpg
 
 .DS_Store
 Thumbs.db
