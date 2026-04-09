@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flower Disease Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+
+    <main class="page">
+        <section class="hero card reveal">
+            <p class="eyebrow">YOLO-powered plant health assistant</p>
+            <h1>Flower Disease Detection</h1>
+            <p class="subtitle">Upload a flower image to run trained-model inference and visualize detections with confidence scores.</p>
+        </section>
+
+        <section class="card reveal" style="--delay: 120ms;">
+            <form method="POST" enctype="multipart/form-data" class="upload-form" id="predictForm">
+                <label for="image" class="file-label">Choose image</label>
+                <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Drop image here or click to choose file">
+                    <p class="drop-title">Drag and drop image here</p>
+                    <p class="drop-subtitle">or click to browse from your device</p>
+                    <input id="image" type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required>
+                </div>
+                <p class="file-name" id="fileName">No file selected</p>
+
+                <div class="preview-wrap" id="previewWrap" hidden>
+                    <img id="previewImage" alt="Selected image preview">
+                </div>
+
+                <div class="controls-grid">
+                    <label class="check-wrap" for="disease_only">
+                        <input id="disease_only" type="checkbox" name="disease_only" {% if disease_only %}checked{% endif %}>
+                        <span>Disease-only mode</span>
+                    </label>
+                </div>
+
+                <div class="actions-row">
+                    <button type="submit" id="submitBtn">Run Detection</button>
+                    <button type="button" class="ghost-btn" id="clearBtn">Clear Result</button>
+                </div>
+            </form>
+
+            {% if error %}
+                <div class="alert error">{{ error }}</div>
+            {% endif %}
+        </section>
+
+        {% if image_name %}
+        <section class="results-grid reveal" style="--delay: 220ms;">
+            <article class="card result-card">
+                <h2>Annotated Result</h2>
+                <img src="{{ url_for('static', filename=image_name) }}" alt="Detection result">
+            </article>
+
+            <article class="card meta-card">
+                <h2>Prediction Summary</h2>
+                <p class="meta-line">Disease detections: <strong>{{ result.total }}</strong></p>
+                <p class="meta-line">Detected regions: <strong>{{ result.raw_total }}</strong></p>
+                <p class="meta-line">Mode: <strong>{{ result.mode }}</strong></p>
+                <p class="meta-line">Inference time: <strong>{{ result.latency_ms }} ms</strong></p>
+                {% if result.top_detection %}
+                    <div class="top-badge">
+                        Top diagnosis: <strong>{{ result.top_detection.label }}</strong> ({{ result.top_detection.confidence }}%)
+                    </div>
+                {% endif %}
+                {% if result.detections %}
+                    <ul class="detection-list">
+                        {% for item in result.detections %}
+                            <li>
+                                <span>{{ item.label }}{% if item.count > 1 %} ({{ item.count }} regions){% endif %}</span>
+                                <strong>{{ item.confidence }}%</strong>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="muted">{{ result.message }}</p>
+                {% endif %}
+            </article>
+        </section>
+        {% endif %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
